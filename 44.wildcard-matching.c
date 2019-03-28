@@ -92,108 +92,99 @@
 #define false 0
 #endif
 
-
-
-
-
-
-
-
-
 int count_wild_char(char *p)
 {
     int num = 0;
-    while ( *p != 0 )
+    while (*p != 0)
     {
-        if (*p == '*')
+        if (*p++ == '*')
         {
             num++;
         }
-        p++;
     }
     return num;
 }
 
+#define INITIAL_VALUE -1
+char *p_g_record = NULL;
+int collum_size = 0;
 
-#define     INITIAL_VALUE   -1 
-char** p_g_record = NULL;
-
-bool is_match(char* s, char* p, int index1, int index2)
+bool is_match(char *s, char *p, int index1, int index2)
 {
-    if(!s || !p )
-    {
-        return false;
-    }
+    // if (!s || !p)
+    // {
+    //     return p_g_record[index1 * collum_size + index2] = false;
+    // }
     // printf("s is %s p is %s index1=%d index2=%d [%d][%d]=%d\n", s, p, index1, index2, index1, index2,p_g_record[index1][index2]);
-    if( p_g_record[index1][index2] != INITIAL_VALUE )
+    int index = index1 * collum_size + index2;
+    if (p_g_record[index] != INITIAL_VALUE)
     {
-        return p_g_record[index1][index2];
+        return p_g_record[index];
     }
-
-   if (*s == 0) // 查找串已经到了末尾，模式串如果也到了末尾，或者还有字符但全部都是*，都算匹配成功
+    int size_s = strlen(s);
+    int size_p = strlen(p);
+    int count_wild = count_wild_char(p);
+    if (*s == 0) // 查找串已经到了末尾，模式串如果也到了末尾，或者还有字符但全部都是*，都算匹配成功
     {
-        if (strlen(p) == count_wild_char(p))
+        if ( size_p == count_wild)
         {
-            return p_g_record[index1][index2] = true;
+            return p_g_record[index] = true;
         }
         else
         {
-            return p_g_record[index1][index2] = false;
+            return p_g_record[index] = false;
         }
     }
 
     if (*p == 0)
     {
-        if (strlen(s) == 0)
+        if ( size_s == 0)
         {
-            return p_g_record[index1][index2] = true;
+            return p_g_record[index] = true;
         }
         else
         {
-            return p_g_record[index1][index2] = false;
+            return p_g_record[index] = false;
         }
     }
 
     // 还没有结束，模式串和串都没有到尾，先判断当前
     if (*p == '*')
     {
-        if (strlen(p) == count_wild_char(p))
+        if ( size_p == count_wild )
         {
-            return p_g_record[index1][index2] = true;
+            return p_g_record[index] = true;
         }
         else
         {
             int i = 0;
-            int len = strlen(s) - ( strlen(p + 1) - count_wild_char(p + 1) );
+            int len = size_s - ( size_p  - count_wild );
             for (i = 0; i <= len; i++)
             {
-                if (is_match(s + i, p + 1,index1+i, index2+1) == true)
+                if (is_match(s + i, p + 1, index1 + i, index2 + 1) == true)
                 {
-                    return p_g_record[index1][index2] = true;
+                    return p_g_record[index] = true;
                 }
             }
-            return p_g_record[index1][index2] = false;
-        }        
+            return p_g_record[index] = false;
+        }
     }
     else if (*p == '?')
     {
-        return p_g_record[index1][index2] = is_match(s + 1, p + 1,index1+1, index2+1);
+        return p_g_record[index] = is_match(s + 1, p + 1, index1 + 1, index2 + 1);
     }
     else
     {
         if (*p == *s)
         {
-            return p_g_record[index1][index2] = is_match(s + 1, p + 1, index1+1, index2+1);
+            return p_g_record[index] = is_match(s + 1, p + 1, index1 + 1, index2 + 1);
         }
         else
         {
-            return p_g_record[index1][index2] = false;
+            return p_g_record[index] = false;
         }
     }
-
 }
-
-
 
 bool isMatch(char *s, char *p)
 {
@@ -201,31 +192,15 @@ bool isMatch(char *s, char *p)
     {
         return false;
     }
-    // printf("s is %s p is %s\n", s, p);
-    p_g_record = (char**) malloc((strlen(s) + 1 ) * sizeof(char*) );
-    if( !p_g_record )
+    collum_size = (strlen(p) + 1);
+    int row_size = strlen(s) + 1;
+    p_g_record = (char *)malloc((row_size) * (collum_size) * sizeof(char));
+    if (!p_g_record)
     {
         return false;
     }
-
-    int i, j;
-    for(i = 0; i < strlen(s) + 1; i++)
-    {
-        p_g_record[i] = (char*)malloc( (strlen(p) + 1)  * sizeof(char));
-        if( ! p_g_record[i] )
-        {
-            return false;
-        }
-        for(j = 0; j < strlen(p) + 1; j++)
-        {
-            p_g_record[i][j] = INITIAL_VALUE;
-        }
-    }
-    bool ret = is_match(s, p, 0 ,0);
-    for(i = 0; i < strlen(s) + 1; i++)
-    {
-        free(p_g_record[i]);
-    }
+    memset(p_g_record, INITIAL_VALUE, (row_size) * (collum_size));
+    bool ret = is_match(s, p, 0, 0);
     free(p_g_record);
     return ret;
 }
