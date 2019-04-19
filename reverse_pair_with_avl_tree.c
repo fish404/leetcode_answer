@@ -1,3 +1,5 @@
+// 平衡树， avl tree，二叉查找树，bst。
+
 /*
 * @lc app=leetcode id=493 lang=c
 *
